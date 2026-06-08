@@ -33,7 +33,7 @@ mlruns/
 wandb/
 
 # Data (large files – not committed)
-data/
+/data/
 *.edf
 *.EDF
 

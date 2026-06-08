@@ -1,0 +1,71 @@
+# ============================================================================
+# EEG Spectrogram Classifier – Default Configuration
+# ============================================================================
+# Override any value via a custom YAML or CLI:
+#   python -m eeg_classifier.training.train --config configs/custom.yaml
+# ============================================================================
+
+# --- Data -------------------------------------------------------------------
+data:
+  data_dir: "data/chb-mit"
+  ann_csv: ""                       # optional seizure-annotation CSV
+  max_files: null                   # null = process all EDF files
+  picks: null                       # list of channel names or null = all
+  test_size: 0.20
+  val_size: 0.20
+  random_seed: 42
+  # Subject-aware splitting (prevents data leakage)
+  subject_aware_split: true         # use GroupShuffleSplit on patient IDs
+
+# --- Signal Processing ------------------------------------------------------
+signal:
+  sample_rate: 256                  # target resampling rate (Hz)
+  window_sec: 10                    # window duration in seconds
+  window_step_sec: 5                # stride between windows in seconds
+
+# --- Feature Extraction -----------------------------------------------------
+features:
+  n_mels: 64
+  hop_length: 128
+  n_fft: 512                       # FFT window size
+  fmin: 0.5                        # minimum frequency for mel filterbank
+  fmax: 40.0                       # maximum frequency (EEG-relevant)
+
+# --- Autoencoder ------------------------------------------------------------
+autoencoder:
+  embedding_dim: 128
+  epochs: 10
+  learning_rate: 1.0e-3
+  batch_size: 16
+  checkpoint: "runs/ae.pth"
+
+# --- Classifier -------------------------------------------------------------
+classifier:
+  epochs: 20
+  learning_rate: 1.0e-4
+  batch_size: 16
+  dropout: 0.4
+  freeze_encoder: true              # freeze encoder weights during classifier training
+  checkpoint: "runs/clf.pth"
+
+# --- Evaluation --------------------------------------------------------------
+evaluation:
+  metrics:
+    - accuracy
+    - f1
+    - precision
+    - recall
+    - roc_auc
+  confusion_matrix: true
+  save_plots: true
+  plots_dir: "runs/plots"
+
+# --- Experiment Tracking (MLflow) -------------------------------------------
+tracking:
+  enabled: true
+  experiment_name: "eeg-seizure-detection"
+  tracking_uri: "mlruns"            # local file store; change for remote server
+
+# --- Output -----------------------------------------------------------------
+output:
+  run_dir: "runs"
